@@ -1,0 +1,73 @@
+{% extends "./dashboard/dashboard_layout.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    integrity="sha512-BHC1j2RN+OTZbD8p+q7iuv50Nbx6U8vcXuq6oixxuE5l0Z9Z6edviTYeZuLhr/FJGKx6UD4xNcJ3UeJftT02AA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<main>
+    {% if current_user.role == "SA" %}
+    <div class="container">
+        <h1 class="mt-4 mb-3">Danh sách user</h1>
+
+        <!-- <div class="card mb-4">
+            <div class="card-header">
+                Filter and Finder
+            </div>
+            <div class="card-body">
+
+                <div class="form-group">
+                    <label for="roleFilter">Filter by Role:</label>
+                    <select class="form-control" id="roleFilter">
+                        <option value="">All</option>
+                        <option value="admin">Admin</option>
+                        <option value="user">User</option>
+
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="nameFinder">Find by Name:</label>
+                    <input type="text" class="form-control" id="nameFinder">
+                </div>
+            </div>
+        </div> -->
+
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Số Điện Thoại</th>
+                            <th>Họ Và Tên</th>
+                            <th>Vai Trò</th>
+                            <th>Action</th> <!-- Add an Action column -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.role }}</td>
+                            <td>
+                                <form action="{{ url_for('routes.delete_user', user_id=user.id) }}" method="post"
+                                    style="display: inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Bạn Có Chắc Chắn muốn xóa người này?');">
+                                        <i class="fas fa-trash-alt"></i> Xóa
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</main>
+{% endblock %}

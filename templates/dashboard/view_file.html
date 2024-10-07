@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xem Chi Tiết Tập Tin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1>Chi Tiết Tập Tin</h1>
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ file.name }}</h5>
+                <p class="card-text">Loại: {{ file.fileType }}</p>
+                <p class="card-text">Đường Dẫn: {{ file.path }}</p>
+
+                {% if file.fileType == 'tai-nguyen-video' %}
+                <!-- Display video -->
+                <video width="100%" controls>
+                    <source src="{{ url_for('routes.view_file_tainguyen', file_id=file.id) }}" type="video/mp4">
+                    Trình duyệt của bạn không hỗ trợ thẻ video.
+                </video>
+                {% elif file.fileType == 'tai-nguyen-cai-dat' %}
+                <!-- Display document as an iframe if it's a PDF or provide a link to download -->
+                {% if file.path.endswith('.pdf') %}
+                <iframe src="{{ url_for('routes.view_file_tainguyen', file_id=file.id) }}" width="100%"
+                    height="600px"></iframe>
+                {% else %}
+                <a href="{{ url_for('routes.view_file_tainguyen', file_id=file.id) }}" class="btn btn-primary"
+                    target="_blank">Xem Tài Liệu</a>
+                {% endif %}
+                {% elif file.fileType == 'tai-nguyen-giao-duc-khac' %}
+                <!-- Display other types of educational materials -->
+                {% if file.path.endswith('.pdf') %}
+                <iframe src="{{ url_for('routes.view_file_tainguyen', file_id=file.id) }}" width="100%"
+                    height="600px"></iframe>
+                {% elif file.path.endswith('.jpg') or file.path.endswith('.jpeg') or file.path.endswith('.png') %}
+                <img src="{{ url_for('routes.view_file_tainguyen', file_id=file.id) }}" class="img-fluid" alt="Image">
+                {% else %}
+                <a href="{{ url_for('routes.view_file_tainguyen', file_id=file.id) }}" class="btn btn-primary"
+                    target="_blank">Xem Tài Liệu</a>
+                {% endif %}
+                {% endif %}
+
+                <a href="{{ url_for('routes.download_file', file_id=file.id) }}" class="btn btn-primary mt-3">Tải
+                    Xuống</a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

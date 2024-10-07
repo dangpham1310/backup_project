@@ -1,0 +1,136 @@
+{% extends "./dashboard/dashboard_layout.html" %}
+
+{% block content %}
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .container {
+        margin-top: 50px;
+    }
+
+    h1 {
+        color: #343a40;
+        margin-bottom: 30px;
+    }
+
+    .form-label {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+</style>
+
+<div class="container mt-5">
+    <h1 class="text-center">Tải Thư Mục Lên</h1>
+    <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="grade" class="form-label">Chọn Khối Lớp</label>
+            <select id="grade" name="grade" class="form-select">
+                <option value="">--Vui Lòng Chọn Khối Lớp--</option>
+                {% for grade in grades %}
+                <option value="{{ grade.id }}">{{ grade.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="course" class="form-label">Chọn Khóa Học (Môn Học)</label>
+            <select id="course" name="course" class="form-select">
+                <option value="">--Vui Lòng Chọn Môn Học--</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="typeCourse" class="form-label">Chọn Loại Bài Giảng</label>
+            <select id="typeCourse" name="typeCourse" class="form-select">
+                <option value="">--Vui Lòng Loại Bài Giảng--</option>
+                <option value="Articulate Storyline 3">Articulate Storyline 3</option>
+                <option value="Avina">Avina</option>
+                <option value="ISPING">ISPING</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="file-input" class="form-label">Vui Lòng Chọn Thư Mục</label>
+            <input type="file" id="file-input" name="files[]" multiple webkitdirectory mozdirectory
+                class="form-control">
+        </div>
+
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">Tải Lên</button>
+        </div>
+
+
+        {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert"
+            style="border: 2px solid #28a745; background-color: #d4edda;">
+            <div style="display: flex; align-items: center;">
+                <div class="me-2">
+                    <i class="bi bi-check-circle-fill" style="color: #28a745; font-size: 1.5rem;"></i>
+                </div>
+                <div>
+                    <strong>Thành công!</strong> {{ message }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+
+
+    </form>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" aria-labelledby="loadingModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loadingModalLabel">Xin Quý Thầy Cô Vui Lòng Đợi...</h5>
+            </div>
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Đang tải...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const courses = {{ courses| tojson }};
+
+    document.getElementById('grade').addEventListener('change', function () {
+        const gradeId = this.value;
+        const courseSelect = document.getElementById('course');
+
+        // Clear current options
+        courseSelect.innerHTML = '';
+
+        // Populate with new options
+        courses.forEach(course => {
+            if (course.grade_id == gradeId) {
+                const option = document.createElement('option');
+                option.value = course.id;
+                option.textContent = course.name;
+                courseSelect.appendChild(option);
+            }
+        });
+    });
+
+    document.getElementById('upload-form').addEventListener('submit', function (e) {
+        var loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'), {
+            backdrop: 'static',
+            keyboard: false
+        });
+        loadingModal.show();
+    });
+</script>
+
+{% endblock %}

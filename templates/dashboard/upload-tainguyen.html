@@ -1,0 +1,60 @@
+{% extends "./dashboard/dashboard_layout.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Upload Tài Nguyên</h2>
+    <form action="{{ url_for('routes.uploadtainguyen') }}" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="name" class="form-label">Tên</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <div class="mb-3">
+            <label for="type" class="form-label">Loại</label>
+            <select class="form-control" id="type" name="type" required>
+                <option value="Tài nguyên video">Tài nguyên video</option>
+                <option value="Tài nguyên cài đặt">Tài nguyên cài đặt</option>
+                <option value="Tài nguyên giáo dục khác">Tài nguyên giáo dục khác</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="file" class="form-label">Chọn file</label>
+            <input type="file" class="form-control" id="file" name="file"
+                accept=".mp4,.pdf,.doc,.docx,.ppt,.pptx,.zip,.rar,.xlsx" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+
+
+    {% if current_user.role == "SA" %}
+    <h2 class="mt-5">Danh Sách Tài Nguyên</h2>
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên</th>
+                <th>Loại</th>
+                <th>Đường Dẫn</th>
+                <th>Hành Động</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for file in files %}
+            <tr>
+                <td>{{ file.id }}</td>
+                <td>{{ file.name }}</td>
+                <td>{{ file.fileType }}</td>
+                <td>{{ file.path }}</td>
+                <td>
+                    <form action="{{ url_for('routes.delete_file', file_id=file.id) }}" method="post"
+                        style="display:inline-block;">
+                        <button type="submit" class="btn btn-danger"
+                            onclick="return confirm('Bạn có chắc chắn muốn xóa file này không?');">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+{% endblock %}

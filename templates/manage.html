@@ -1,0 +1,185 @@
+{% extends "./dashboard/dashboard_layout.html" %}
+
+{% block content %}
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .container {
+        margin-top: 50px;
+    }
+
+    h1 {
+        color: #343a40;
+    }
+
+    .card {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border: none;
+        border-radius: 8px;
+    }
+
+    .card-header {
+        background-color: #007bff;
+        color: white;
+        font-weight: bold;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+
+    .form-group label {
+        font-weight: bold;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    .form-control {
+        border-radius: 4px;
+    }
+</style>
+
+<div class="container">
+    <h1 class="mb-4 text-center">Quản lý Khóa học và Khối Lớp</h1>
+
+    <!-- Create Grade Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            Tạo Lớp
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('routes.create_grade') }}">
+                <div class="form-group">
+                    <label for="grade_name">Tên Khối</label>
+                    <input type="text" class="form-control" id="grade_name" name="name" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Tạo Tên Khối</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Course Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            Thêm Môn Học
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('routes.add_course') }}">
+                <div class="form-group">
+                    <label for="course_name">Tên Môn Học</label>
+                    <input type="text" class="form-control" id="course_name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="grade_id">Chọn Khối</label>
+                    <select class="form-control" id="grade_id" name="grade_id" required>
+                        <option value="">Chọn Khối</option>
+                        {% for grade in grades %}
+                        <option value="{{ grade.id }}">{{ grade.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Thêm Môn Học</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Grade or Course -->
+    <div class="card mb-4">
+        <div class="card-header">
+            Xóa Khối Hoặc Môn Học Hoặc Bài Học
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('routes.delete') }}">
+                <div class="form-group">
+                    <label for="">Xóa Khối</label>
+                    <select class="form-control" id="delete_grade_id" name="grade_id">
+                        <option value="">Chọn Khối</option>
+                        {% for grade in grades %}
+                        <option value="{{ grade.id }}">{{ grade.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="delete_course_id">Xóa Môn Học</label>
+                    <select class="form-control" id="delete_course_id" name="course_id">
+                        <option value="">Chọn Môn Học</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="delete_lesson_id">Xóa Bài Học</label>
+                    <select class="form-control" id="delete_lesson_id" name="lesson_id">
+                        <option value="">Chọn Bài Học</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-danger btn-block">Xóa</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#delete_grade_id').change(function () {
+            var gradeId = $(this).val();
+            if (gradeId) {
+                $.ajax({
+                    url: '{{ url_for("routes.get_courses") }}',
+                    type: 'GET',
+                    data: { grade_id: gradeId },
+                    dataType: 'json'
+                }).done(function (data) {
+                    var courses = $('#delete_course_id');
+                    courses.empty();
+                    courses.append('<option value="">Select Course</option>');
+                    $.each(data.courses, function (key, course) {
+                        courses.append('<option value="' + course.id + '">' + course.name + '</option>');
+                    });
+                    $('#delete_lesson_id').empty();
+                    $('#delete_lesson_id').append('<option value="">Select Lesson</option>');
+                });
+            } else {
+                $('#delete_course_id').empty();
+                $('#delete_course_id').append('<option value="">Select Course</option>');
+                $('#delete_lesson_id').empty();
+                $('#delete_lesson_id').append('<option value="">Select Lesson</option>');
+            }
+        });
+
+        $('#delete_course_id').change(function () {
+            var courseId = $(this).val();
+            if (courseId) {
+                $.ajax({
+                    url: '{{ url_for("routes.get_lessons") }}',
+                    type: 'GET',
+                    data: { course_id: courseId },
+                    dataType: 'json'
+                }).done(function (data) {
+                    var lessons = $('#delete_lesson_id');
+                    lessons.empty();
+                    lessons.append('<option value="">Select Lesson</option>');
+                    $.each(data.lessons, function (key, lesson) {
+                        lessons.append('<option value="' + lesson.id + '">' + lesson.name + '</option>');
+                    });
+                });
+            } else {
+                $('#delete_lesson_id').empty();
+                $('#delete_lesson_id').append('<option value="">Select Lesson</option>');
+            }
+        });
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "./dashboard/dashboard_layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Quản lý thời gian link</h2>
+
+    <!-- Form thêm quản lý thời gian -->
+    <form method="POST" action="{{ url_for('routes.quanlythoigian') }}">
+        <div class="form-group">
+            <label for="time_end">Thời gian kết thúc:</label>
+            <input type="datetime-local" class="form-control" id="time_end" name="time_end" required>
+        </div>
+
+        <div class="form-group">
+            <label for="link">Link:</label>
+            <input type="text" class="form-control" id="link" name="link" placeholder="Nhập link" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Thêm quản lý thời gian</button>
+    </form>
+
+    <!-- Danh sách quản lý thời gian -->
+    <h3 class="mt-5">Danh sách quản lý thời gian</h3>
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th>Thời gian bắt đầu</th>
+                <th>Thời gian kết thúc</th>
+                <th>Link</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for time_control in time_controls %}
+            <tr>
+                <td>{{ time_control.timeStart.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td>{{ time_control.timeEnd.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                <td><a href="{{ time_control.link }}" target="_blank">{{ time_control.link }}</a></td>
+                <td>{{ 'Hết hạn' if time_control.timeEnd < datetime.utcnow() else 'Còn hạn' }}</td>
+                <td>
+                    <!-- Form sửa thời gian kết thúc -->
+                    <form method="POST" action="{{ url_for('routes.edit_time', id=time_control.id) }}"
+                        style="display: inline;">
+                        <input type="datetime-local" class="form-control mb-2" name="time_end" required>
+                        <button type="submit" class="btn btn-warning">Cập nhật</button>
+                    </form>
+
+                    <!-- Form xóa bản ghi -->
+                    <form method="POST" action="{{ url_for('routes.delete_time', id=time_control.id) }}"
+                        style="display: inline;">
+                        <button type="submit" class="btn btn-danger">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center">Không có bản ghi nào</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if pagination.has_prev %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="{{ url_for('routes.quanlythoigian', page=pagination.prev_num) }}">Previous</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+
+            {% for page_num in pagination.iter_pages() %}
+            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('routes.quanlythoigian', page=page_num) }}">{{ page_num }}</a>
+            </li>
+            {% endfor %}
+
+            {% if pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('routes.quanlythoigian', page=pagination.next_num) }}">Next</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endblock %}

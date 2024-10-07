@@ -1,0 +1,197 @@
+{% extends "./dashboard/dashboard_layout.html" %}
+
+{% block content %}
+<style>
+    /* Ensure the table takes the full width and supports horizontal scrolling */
+    .table-responsive {
+        overflow-x: auto;
+        width: 100%;
+    }
+
+    .table {
+        width: 100%;
+        min-width: 100%;
+        white-space: nowrap;
+    }
+
+    .table th,
+    .table td {
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    /* Additional styling for better responsiveness */
+    .card-body {
+        padding: 0;
+    }
+
+    /* Improve the look of table rows */
+    .table-hover tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Quản lý Rsync</h2>
+        </div>
+    </div>
+
+    <!-- Form thêm quản lý Rsync với thời gian backup -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Thêm công việc Rsync</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Ví dụ: rsync -avz -e 'ssh -p 777' kari@karis.fun:/home/kari/uploads/ /root/Backups/Backup1/</h6>
+                    <form method="POST" action="{{ url_for('routes.add_rsync_job') }}">
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="name_rent">Người Thuê</label>
+                                <input type="text" class="form-control" id="name_rent" name="name_rent"
+                                    placeholder="Ví dụ: Pham Thien Dang" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="ssh_port">Cổng SSH</label>
+                                <input type="number" class="form-control" id="ssh_port" name="ssh_port"
+                                    placeholder="Ví dụ: 777" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="source_user">Người dùng nguồn</label>
+                                <input type="text" class="form-control" id="source_user" name="source_user"
+                                    placeholder="Ví dụ: kari" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="source_host">Máy chủ nguồn</label>
+                                <input type="text" class="form-control" id="source_host" name="source_host"
+                                    placeholder="Ví dụ: karis.fun" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="source_path">Đường dẫn nguồn</label>
+                                <input type="text" class="form-control" id="source_path" name="source_path"
+                                    placeholder="Ví dụ: /home/kari/uploads/" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="dest_path">Đường dẫn đích</label>
+                                <input type="text" class="form-control" id="dest_path" name="dest_path"
+                                    placeholder="Ví dụ: /root/Backups/Backup1/" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="schedule_type">Lịch trình backup</label>
+                                <select class="form-control" id="schedule_type" name="schedule_type" required>
+                                    <option value="daily">Hằng ngày</option>
+                                    <option value="weekly">Hằng tuần</option>
+                                    <option value="monthly">Hằng tháng</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group text-right">
+                            <button type="submit" class="btn btn-success"><i class="fas fa-plus"></i> Thêm
+                                Rsync</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danh sách quản lý Rsync -->
+    <div class="row mt-5">
+        <div class="col">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Danh sách Rsync</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Người Thuê</th>
+                                    <th>Người dùng nguồn</th>
+                                    <th>Máy chủ nguồn</th>
+                                    <th>Đường dẫn nguồn</th>
+                                    <th>Đường dẫn đích</th>
+                                    <th>Thời gian thực hiện</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in rsync_jobs %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ job.name_rent }}</td>
+                                    <td>{{ job.source_user }}</td>
+                                    <td>{{ job.source_host }}</td>
+                                    <td>{{ job.source_path }}</td>
+                                    <td>{{ job.dest_path }}</td>
+                                    <td>{{ job.backuptime }}</td>
+                                    <td class="text-center">
+                                        <form method="POST" action="{{ url_for('routes.start_backup', job_id=job.id) }}"
+                                            style="display:inline;">
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="fas fa-play"></i>
+                                            </button>
+                                        </form>
+                                        <form method="POST"
+                                            action="{{ url_for('routes.delete_rsync_job', job_id=job.id) }}"
+                                            style="display:inline;"
+                                            onsubmit="return confirm('Bạn có chắc chắn muốn xóa?');">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center">Không có bản ghi nào</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div> <!-- Closing the scrollable div -->
+
+                    <!-- Pagination -->
+                    <nav aria-label="Page navigation" class="mt-3">
+                        <ul class="pagination justify-content-center">
+                            {% if pagination.has_prev %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                    href="{{ url_for('routes.backupManage', page=pagination.prev_num) }}">Previous</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                            {% endif %}
+
+                            {% for page_num in pagination.iter_pages() %}
+                            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('routes.backupManage', page=page_num) }}">{{
+                                    page_num }}</a>
+                            </li>
+                            {% endfor %}
+
+                            {% if pagination.has_next %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                    href="{{ url_for('routes.backupManage', page=pagination.next_num) }}">Next</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled"><span class="page-link">Next</span></li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
